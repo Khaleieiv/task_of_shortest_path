@@ -26,6 +26,7 @@ class _ProcessPageState extends State<ProcessPage> {
 
     return Scaffold(
       appBar: AppBar(
+        foregroundColor: Colors.white,
         title: const Text(
           "Process Screen",
         ),
@@ -60,11 +61,12 @@ class _ProcessPageState extends State<ProcessPage> {
                         style: Theme.of(context).textTheme.titleLarge,
                         textAlign: TextAlign.center,
                       ),
-                    Text(
-                      '${provider.progress}%',
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
+                    if (provider.isCalculationInProgress)
+                      Text(
+                        '${provider.progress * 100}%',
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
                     Padding(
                       padding: const EdgeInsets.all(40.0),
                       child: CircularProgressIndicator(
@@ -87,16 +89,15 @@ class _ProcessPageState extends State<ProcessPage> {
             if (provider.isCalculationInProgress)
               const SizedBox()
             else
-              GestureDetector(
-                onTap: () => provider.isPostInProgress,
-                child: CustomButton(
-                  onPressed: () {
-                    setState(() {
-                      postDataPressed();
-                    });
-                  },
-                  text: 'Send results to server',
-                ),
+              CustomButton(
+                onPressed: provider.isPostInProgress
+                    ? null
+                    : () {
+                        setState(() {
+                          postDataPressed();
+                        });
+                      },
+                text: 'Send results to server',
               )
           ],
         ),
@@ -109,7 +110,7 @@ class _ProcessPageState extends State<ProcessPage> {
         Provider.of<ShortestPathDataProvider>(context, listen: false);
     await provider.postShortestPathData();
     if (!mounted) return;
-    if (provider.messageServer == "Internal server error") {
+    if (provider.messageServer == "Success") {
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const ResultListPage()),

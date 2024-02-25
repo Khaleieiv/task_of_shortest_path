@@ -13,6 +13,7 @@ class PreviewPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        foregroundColor: Colors.white,
         title: const Text(
           "Preview Screen",
         ),

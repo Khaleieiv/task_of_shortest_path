@@ -24,9 +24,9 @@ class ShortestPathDataRepositoryIml extends ShortestPathDataRepository {
 
   @override
   Future<String> postShortestPathData(
-      String path, PostShortestPathResponse result) async {
+      String path, List<PostShortestPathResponse> result) async {
     final uri = Uri.parse(path);
-    final body = [result.toJson()];
+    final body = result.map((e) => e.toJson()).toList();
     final response = await _client.post(
       uri,
       body: jsonEncode(body),

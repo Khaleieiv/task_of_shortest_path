@@ -6,6 +6,6 @@ abstract class ShortestPathDataRepository {
 
   Future<String> postShortestPathData(
     String path,
-    PostShortestPathResponse result,
+    List<PostShortestPathResponse> result,
   );
 }

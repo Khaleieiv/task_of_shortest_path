@@ -17,6 +17,7 @@ class _ResultListPageState extends State<ResultListPage> {
 
     return Scaffold(
       appBar: AppBar(
+        foregroundColor: Colors.white,
         title: const Text("Result List Page"),
         backgroundColor: Colors.blue,
       ),

@@ -76,21 +76,11 @@ class ShortestPathDataProvider extends ChangeNotifier
 
     setLoading(value: true, loadingType: 'post');
     try {
-      _progress = 0.0;
-      final totalTasks = shortestPathList.length;
 
-      for (var i = 0; i < totalTasks; i++) {
-        final currentTaskProgress = (i + 1) / totalTasks;
-        setProgress(currentTaskProgress * 100);
+      final response = await repository.postShortestPathData(path, shortestPathList);
+      _messageServer = response;
+      notifyListeners();
 
-        final task = shortestPathList[i];
-        final response = await repository.postShortestPathData(path, task);
-        _messageServer = response;
-
-        notifyListeners();
-
-        await Future.delayed(const Duration(milliseconds: 1000));
-      }
     } on CustomResponseException catch (e) {
       _handleShortestPathDataError(e);
       rethrow;
@@ -143,7 +133,7 @@ class ShortestPathDataProvider extends ChangeNotifier
         notifyListeners();
 
         final progress = (i + 1) / data.length;
-        setProgress(progress * 100);
+        setProgress(progress);
         await Future.delayed(const Duration(milliseconds: 1000));
       }
     } on CustomResponseException catch (e) {

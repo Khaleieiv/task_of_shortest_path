@@ -10,8 +10,8 @@ class Point {
 
   Map<String, dynamic> toJson() {
     return {
-      'x': x,
-      'y': y,
+      'x': '$x',
+      'y': '$y',
     };
   }
 }

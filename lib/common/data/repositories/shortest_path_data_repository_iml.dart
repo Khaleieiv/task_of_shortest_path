@@ -23,20 +23,25 @@ class ShortestPathDataRepositoryIml extends ShortestPathDataRepository {
   }
 
   @override
-  Future<void> postShortestPathData(String path, List<PostShortestPathResponse> result) async {
+  Future<String> postShortestPathData(
+      String path, PostShortestPathResponse result) async {
     final uri = Uri.parse(path);
-    final body = result.map((e) => e.toJson()).toList();
-
+    final body = [result.toJson()];
     final response = await _client.post(
-        uri,
-        body: jsonEncode(body),
-        headers: {'Content-Type': 'application/json'});
+      uri,
+      body: jsonEncode(body),
+      headers: {'Content-Type': 'application/json'},
+    );
 
     if (response.statusCode == HttpStatus.ok) {
-      print(response.body);
+      return 'Success';
+    } else if (response.statusCode == HttpStatus.tooManyRequests) {
+      return 'Too many requests';
+    } else if (response.statusCode == HttpStatus.internalServerError) {
+      return 'Internal server error';
     } else {
-      throw Exception('Failed to post shortest path data: ${response.statusCode}');
+      throw Exception(
+          'Failed to post shortest path data: ${response.statusCode}');
     }
   }
-
 }

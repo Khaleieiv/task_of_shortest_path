@@ -4,8 +4,8 @@ import 'package:task_of_shortest_path/common/domain/entities/post_shortest_path_
 abstract class ShortestPathDataRepository {
   Future<GetShortestPathResponse> getShortestPathData(String path);
 
-  Future<void> postShortestPathData(
+  Future<String> postShortestPathData(
     String path,
-    List<PostShortestPathResponse> result,
+    PostShortestPathResponse result,
   );
 }

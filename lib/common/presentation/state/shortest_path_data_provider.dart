@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:task_of_shortest_path/common/domain/entities/get_shortest_path_data.dart';
 import 'package:task_of_shortest_path/common/domain/entities/post_shortest_path_data.dart';
+import 'package:task_of_shortest_path/common/domain/entities/result_list_data.dart';
 import 'package:task_of_shortest_path/common/domain/repositories/shortest_path_data_repository.dart';
 import 'package:task_of_shortest_path/common/utils/custom_exception.dart';
 import 'package:task_of_shortest_path/common/utils/shortest_path_algorithm.dart';
@@ -10,13 +11,18 @@ import 'loading_state_notifier..dart';
 class ShortestPathDataProvider extends ChangeNotifier
     with LoadingStateNotifier {
   GetShortestPathResponse? _getShortestPathResponse;
+
   List<PostShortestPathResponse>? _postShortestPathResponseList;
+
+  List<ResultListData>? _resultListData;
+
+  ResultListData? _currentResultLData;
+
+  String? _messageServer;
 
   final ShortestPathDataRepository repository;
 
   ShortestPathDataProvider({required this.repository});
-
-  String? _path;
 
   GetShortestPathResponse? get getShortestPathResponse =>
       _getShortestPathResponse;
@@ -24,9 +30,17 @@ class ShortestPathDataProvider extends ChangeNotifier
   List<PostShortestPathResponse>? get postShortestPathResponseList =>
       _postShortestPathResponseList;
 
+  List<ResultListData>? get resultListData => _resultListData;
+
+  ResultListData? get currentResultLData => _currentResultLData;
+
+  String? get messageServer => _messageServer;
+
   CustomException _shortestPathDataException = CustomException(null);
 
   CustomException get authException => _shortestPathDataException;
+
+  String? _path;
 
   double _progress = 0.0;
 
@@ -37,10 +51,12 @@ class ShortestPathDataProvider extends ChangeNotifier
     notifyListeners();
   }
 
-  Future<void> fetchShortestPathData(String path) async {
-    if (isLoading) return;
+  void setCurrentResultListData(ResultListData? dataList) {
+    _currentResultLData = dataList;
+    notifyListeners();
+  }
 
-    setLoadingState(value: true);
+  Future<void> fetchShortestPathData(String path) async {
     try {
       final response = await repository.getShortestPathData(path);
       _getShortestPathResponse = response;
@@ -49,40 +65,51 @@ class ShortestPathDataProvider extends ChangeNotifier
     } on CustomResponseException catch (e) {
       _handleShortestPathDataError(e);
       rethrow;
-    } finally {
-      setLoadingState(value: false);
     }
   }
 
   Future<void> postShortestPathData() async {
     final path = _path;
     final shortestPathList = _postShortestPathResponseList;
-    if (isLoading || path == null || shortestPathList == null) return;
 
-    setLoadingState(value: true);
+    if (isPostInProgress || path == null || shortestPathList == null) return;
+
+    setLoading(value: true, loadingType: 'post');
     try {
       _progress = 0.0;
-      await repository.postShortestPathData(path, shortestPathList);
-      notifyListeners();
-      setProgress(progress * 100);
-      await Future.delayed(const Duration(milliseconds: 1000));
+      final totalTasks = shortestPathList.length;
+
+      for (var i = 0; i < totalTasks; i++) {
+        final currentTaskProgress = (i + 1) / totalTasks;
+        setProgress(currentTaskProgress * 100);
+
+        final task = shortestPathList[i];
+        final response = await repository.postShortestPathData(path, task);
+        _messageServer = response;
+
+        notifyListeners();
+
+        await Future.delayed(const Duration(milliseconds: 1000));
+      }
     } on CustomResponseException catch (e) {
       _handleShortestPathDataError(e);
       rethrow;
     } finally {
-      setLoadingState(value: false);
+      setLoading(value: false, loadingType: 'post');
     }
   }
 
   Future<void> calculationShortestPath() async {
-    if (isLoading) return;
+    if (isCalculationInProgress) return;
 
-    setLoadingState(value: true);
+    setLoading(value: true, loadingType: 'calculation');
 
     try {
       final data = _getShortestPathResponse!.data;
 
+      _messageServer = "";
       _postShortestPathResponseList = [];
+      _resultListData = [];
 
       for (var i = 0; i < data.length; i++) {
         final task = data[i];
@@ -90,9 +117,10 @@ class ShortestPathDataProvider extends ChangeNotifier
         final start = task.start;
         final end = task.end;
 
-        final shortestPathAlgorithm = ShortestPathAlgorithm(field, start, end);
-        final shortestPath = shortestPathAlgorithm.solve();
-        final pathString = shortestPath.map((point) => '(${point.x},${point.y})').join('->');
+        final shortestPathAlgorithm = PathFinder(field, start, end);
+        final shortestPath = shortestPathAlgorithm.findShortestPath();
+        final pathString =
+            shortestPath.map((point) => '(${point.x},${point.y})').join('->');
 
         _postShortestPathResponseList?.add(
           PostShortestPathResponse(
@@ -101,21 +129,30 @@ class ShortestPathDataProvider extends ChangeNotifier
             path: pathString,
           ),
         );
+        _resultListData?.add(
+          ResultListData(
+            id: task.id,
+            field: field,
+            start: start,
+            end: end,
+            steps: shortestPath,
+            path: pathString,
+          ),
+        );
+
         notifyListeners();
 
         final progress = (i + 1) / data.length;
         setProgress(progress * 100);
         await Future.delayed(const Duration(milliseconds: 1000));
-
       }
     } on CustomResponseException catch (e) {
       _handleShortestPathDataError(e);
       rethrow;
     } finally {
-      setLoadingState(value: false);
+      setLoading(value: false, loadingType: 'calculation');
     }
   }
-
 
   void _handleShortestPathDataError(Exception? exception) {
     _shortestPathDataException = CustomException(exception);

@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
 
 mixin LoadingStateNotifier on ChangeNotifier {
-  bool _isLoading = false;
+  bool _isCalculationInProgress = false;
+  bool _isPostInProgress = false;
 
-  bool get isLoading => _isLoading;
+  bool get isCalculationInProgress => _isCalculationInProgress;
+  bool get isPostInProgress => _isPostInProgress;
 
-  void setLoadingState({required bool value}) {
-    if (_isLoading == value) return;
+  void setLoading({required String loadingType, required bool value}) {
+    if ((loadingType == 'calculation' && _isCalculationInProgress == value) ||
+        (loadingType == 'post' && _isPostInProgress == value)) return;
 
-    _isLoading = value;
+    switch (loadingType) {
+      case 'calculation':
+        _isCalculationInProgress = value;
+        break;
+      case 'post':
+        _isPostInProgress = value;
+        break;
+    }
     notifyListeners();
   }
 }
+

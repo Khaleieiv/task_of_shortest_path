@@ -92,7 +92,7 @@ class _HomePageState extends State<HomePage> {
         Provider.of<ShortestPathDataProvider>(context, listen: false);
     await dataNotifier.fetchShortestPathData(_urlController.text);
     if (!mounted) return;
-    await Navigator.push(
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ProcessPage()),
     );

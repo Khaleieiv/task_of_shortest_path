@@ -63,14 +63,14 @@ class ResultViewPage extends StatelessWidget {
     Color textColor = Colors.black;
 
     if (point.x == start.x && point.y == start.y) {
-      cellColor = const Color(0xFF64FFDA); // Початкова комірка
+      cellColor = const Color(0xFF64FFDA); // Start cell
     } else if (point.x == end.x && point.y == end.y) {
-      cellColor = const Color(0xFF009688); // Кінцева комірка
+      cellColor = const Color(0xFF009688); // End cell
     } else if (FieldChecker().isPointInField(point, field)) {
-      cellColor = const Color(0xFF4CAF50); // Комірка найкоротшого шляху
+      cellColor = const Color(0xFF4CAF50); // Cell of the shortest path
     } else if (grid[point.x][point.y] == 'X') {
-      cellColor = Colors.black; // Заблокована комірка
-      textColor = Colors.white; // Змінюємо колір тексту на білий
+      cellColor = Colors.black; // Locked cell
+      textColor = Colors.white; // Change the color of the text to white
     }
 
     return Container(

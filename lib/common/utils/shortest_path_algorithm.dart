@@ -1,29 +1,25 @@
 import 'dart:collection';
 import 'package:task_of_shortest_path/common/domain/entities/point.dart';
 
-class Node {
-  final Point point;
-  int distance;
-
-  Node(this.point, this.distance);
-}
-
-class PathFinder {
+// PathFinder class responsible for finding the shortest path between two points on a grid
+class ShortestPathAlgorithm {
   final List<String> _field;
   final Point _start;
   final Point _end;
 
-  late List<List<int>> grid;
-  late List<List<int>> distances;
-  late List<List<bool>> visited;
-  late List<List<Point>> previous;
+  late List<List<int>> grid;       // Represents the grid with obstacles marked as -1
+  late List<List<int>> distances;  // Represents the distances from the starting point to each point on the grid
+  late List<List<bool>> visited;   // Represents whether a point has been visited during traversal
+  late List<List<Point>> previous; // Represents the previous point on the shortest path to each point
 
-  PathFinder(this._field, this._start, this._end) {
+  ShortestPathAlgorithm(this._field, this._start, this._end) {
+    // Initialize the grid with obstacle values (-1)
     grid = List<List<int>>.generate(
       _field.length,
           (int row) => List<int>.filled(_field[row].length, 0),
     );
 
+    // Populate the grid based on the input field
     for (int i = 0; i < _field.length; i++) {
       for (int j = 0; j < _field[i].length; j++) {
         grid[i][j] = _field[i][j] == 'X' ? -1 : 0;
@@ -31,7 +27,9 @@ class PathFinder {
     }
   }
 
+  // Method to find the shortest path using Breadth-First Search algorithm
   List<Point> findShortestPath() {
+    // Initialize distance and visited arrays
     distances = List<List<int>>.generate(
       _field.length,
           (int row) => List<int>.filled(_field[row].length, 1000000),
@@ -45,11 +43,12 @@ class PathFinder {
           (int row) => List<Point>.filled(_field[row].length, Point(-1, -1)),
     );
 
-    distances[_start.x][_start.y] = 0;
+    distances[_start.x][_start.y] = 0; // Set the distance of the starting point to 0
 
     Queue<Node> queue = Queue<Node>();
-    queue.add(Node(_start, 0));
+    queue.add(Node(_start, 0)); // Add the starting point to the queue
 
+    // Perform Breadth-First Search
     while (queue.isNotEmpty) {
       Node current = queue.removeFirst();
       Point point = current.point;
@@ -65,9 +64,10 @@ class PathFinder {
       }
     }
 
-    return getPath();
+    return getPath(); // Return the shortest path
   }
 
+  // Method to retrieve the neighboring points of a given point
   List<Point> getNeighbors(Point point) {
     List<Point> neighbors = [];
     for (int dx = -1; dx <= 1; dx++) {
@@ -89,6 +89,7 @@ class PathFinder {
     return neighbors;
   }
 
+  // Method to reconstruct the shortest path from the 'previous' array
   List<Point> getPath() {
     List<Point> path = [];
     Point current = _end;
@@ -99,4 +100,12 @@ class PathFinder {
     path = path.reversed.toList();
     return path;
   }
+}
+
+// Node class represents a point with a distance value
+class Node {
+  final Point point;
+  int distance;
+
+  Node(this.point, this.distance);
 }

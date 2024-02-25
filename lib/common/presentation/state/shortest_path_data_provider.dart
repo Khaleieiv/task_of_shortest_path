@@ -107,7 +107,7 @@ class ShortestPathDataProvider extends ChangeNotifier
         final start = task.start;
         final end = task.end;
 
-        final shortestPathAlgorithm = PathFinder(field, start, end);
+        final shortestPathAlgorithm = ShortestPathAlgorithm(field, start, end);
         final shortestPath = shortestPathAlgorithm.findShortestPath();
         final pathString =
             shortestPath.map((point) => '(${point.x},${point.y})').join('->');

@@ -91,8 +91,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> getDataPressed() async {
     final dataNotifier =
         Provider.of<ShortestPathDataProvider>(context, listen: false);
-    dataNotifier.fetchShortestPathData(_urlController.text);
-
+    await dataNotifier.fetchShortestPathData(_urlController.text);
+    if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ProcessPage()),
